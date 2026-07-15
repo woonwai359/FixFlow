@@ -1,0 +1,14 @@
+# Node modules
+node_modules/
+
+# Next.js build
+.next/
+
+# Environment
+.env
+
+# Logs
+*.log
+
+# Zip files
+*.zip
