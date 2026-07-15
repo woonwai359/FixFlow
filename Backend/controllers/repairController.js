@@ -6,7 +6,7 @@ exports.getRepairs = async (req, res) => {
 
     try {
 
-        const repairs = await Repair.find()
+        const repairs = await Repair.find({ user: req.user.id })
             .populate("user", "name email")
             .sort({createdAt:-1});
 

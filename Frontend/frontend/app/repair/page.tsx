@@ -1,235 +1,264 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 
-
-export default function RepairPage(){
+export default function RepairPage() {
 
     const router = useRouter();
 
-
-    const [title,setTitle] = useState("");
-    const [detail,setDetail] = useState("");
-    const [location,setLocation] = useState("");
-
-
-
-    const handleSubmit = async()=>{
+    const [form, setForm] = useState({
+        title: "",
+        detail: "",
+        location: ""
+    });
 
 
-        try{
+    const [loading, setLoading] = useState(false);
+
+
+    const handleSubmit = async (e: any) => {
+
+        e.preventDefault();
+
+        try {
+
+            setLoading(true);
 
 
             const token = localStorage.getItem("token");
 
 
+            if (!token) {
+                alert("กรุณาเข้าสู่ระบบก่อนแจ้งซ่อม");
+                router.push("/login");
+                return;
+            }
+
+
             await axios.post(
-
                 "http://localhost:5000/api/repairs",
-
+                form,
                 {
-                    title,
-                    detail,
-                    location
-                },
-
-                {
-                    headers:{
-                        Authorization:`Bearer ${token}`
+                    headers: {
+                        Authorization: `Bearer ${token}`
                     }
                 }
-
             );
 
 
-            alert("แจ้งซ่อมสำเร็จ 💗");
+            alert("แจ้งซ่อมสำเร็จ 🎉");
 
 
             router.push("/dashboard");
 
 
-
-        }catch(error){
+        } catch (error: any) {
 
             console.log(error);
 
-            alert("เกิดข้อผิดพลาดในการแจ้งซ่อม");
+            alert(
+                error?.response?.data?.message
+                ?? "เกิดข้อผิดพลาดในการแจ้งซ่อม"
+            );
+
+        } finally {
+
+            setLoading(false);
 
         }
-
 
     };
 
 
-
-
-
-    return(
+    return (
 
         <div className="
         min-h-screen
-        bg-gradient-to-br
-        from-pink-50
-        via-white
-        to-purple-50
+        flex
+        items-center
+        justify-center
         p-6
+        animate-fade-in-up
         ">
 
 
             <div className="
+            bg-white/80
+            w-full
             max-w-xl
-            mx-auto
-            bg-white
             rounded-3xl
-            shadow-xl
-            p-8
+            shadow-2xl
             border
-            border-pink-100
+            border-cyan-100
+            p-8
+            backdrop-blur-xl
             ">
 
 
-                <h1 className="
-                text-3xl
-                font-black
-                text-pink-600
-                ">
-                    🔧 แจ้งซ่อมใหม่
-                </h1>
+                <div className="flex items-center gap-3 mb-6">
+
+                    <div className="
+                    w-12
+                    h-12
+                    rounded-2xl
+                    bg-gradient-to-br
+                    from-cyan-500
+                    to-emerald-500
+                    flex
+                    items-center
+                    justify-center
+                    text-white
+                    text-2xl
+                    shadow-lg
+                    ">
+                        🔧
+                    </div>
+
+                    <h1 className="
+                    text-3xl
+                    font-bold
+                    bg-gradient-to-r
+                    from-cyan-600
+                    to-emerald-600
+                    bg-clip-text
+                    text-transparent
+                    ">
+                        แจ้งซ่อมใหม่
+                    </h1>
+
+                </div>
 
 
-                <p className="
-                text-gray-500
-                mt-2
-                ">
-                    แจ้งปัญหาเพื่อให้เจ้าหน้าที่ดำเนินการ
-                </p>
-
-
-
-
-
-                <label className="
-                block
-                mt-6
-                font-semibold
-                ">
-                    หัวข้อปัญหา
-                </label>
-
-
-                <input
-
-                className="
-                mt-2
-                w-full
-                rounded-xl
-                border
-                p-3
-                focus:ring-2
-                focus:ring-pink-300
-                "
-
-                placeholder="เช่น แอร์เสีย ไฟดับ"
-
-                onChange={(e)=>
-                    setTitle(e.target.value)
-                }
-
-                />
-
-
-
-
-
-                <label className="
-                block
-                mt-4
-                font-semibold
-                ">
-                    รายละเอียด
-                </label>
-
-
-                <textarea
-
-                className="
-                mt-2
-                w-full
-                h-32
-                rounded-xl
-                border
-                p-3
-                "
-
-                placeholder="อธิบายปัญหาเพิ่มเติม"
-
-                onChange={(e)=>
-                    setDetail(e.target.value)
-                }
-
-                />
-
-
-
-
-
-                <label className="
-                block
-                mt-4
-                font-semibold
-                ">
-                    สถานที่
-                </label>
-
-
-                <input
-
-                className="
-                mt-2
-                w-full
-                rounded-xl
-                border
-                p-3
-                "
-
-                placeholder="เช่น อาคารวิทยาศาสตร์ ห้อง 301"
-
-                onChange={(e)=>
-                    setLocation(e.target.value)
-                }
-
-                />
-
-
-
-
-
-                <button
-
-                onClick={handleSubmit}
-
-                className="
-                mt-6
-                w-full
-                rounded-xl
-                bg-gradient-to-r
-                from-pink-500
-                to-purple-500
-                text-white
-                py-3
-                font-bold
-                hover:scale-105
-                transition
-                "
-
+                <form
+                    onSubmit={handleSubmit}
+                    className="space-y-5"
                 >
 
-                    ส่งแจ้งซ่อม 💗
 
-                </button>
+                    <div>
+                        <label className="font-semibold text-slate-700">
+                            หัวข้อปัญหา
+                        </label>
 
+                        <input
+                            className="
+                            w-full
+                            mt-2
+                            border
+                            border-slate-200
+                            rounded-xl
+                            p-3
+                            focus:outline-none
+                            focus:ring-2
+                            focus:ring-cyan-400
+                            transition
+                            "
+                            placeholder="เช่น แอร์เสีย"
+                            value={form.title}
+                            onChange={(e) =>
+                                setForm({
+                                    ...form,
+                                    title: e.target.value
+                                })
+                            }
+                        />
+                    </div>
+
+
+
+                    <div>
+                        <label className="font-semibold text-slate-700">
+                            รายละเอียด
+                        </label>
+
+                        <textarea
+                            className="
+                            w-full
+                            mt-2
+                            border
+                            border-slate-200
+                            rounded-xl
+                            p-3
+                            h-32
+                            focus:outline-none
+                            focus:ring-2
+                            focus:ring-cyan-400
+                            transition
+                            "
+                            placeholder="อธิบายปัญหา"
+                            value={form.detail}
+                            onChange={(e) =>
+                                setForm({
+                                    ...form,
+                                    detail: e.target.value
+                                })
+                            }
+                        />
+                    </div>
+
+
+
+                    <div>
+                        <label className="font-semibold text-slate-700">
+                            สถานที่
+                        </label>
+
+                        <input
+                            className="
+                            w-full
+                            mt-2
+                            border
+                            border-slate-200
+                            rounded-xl
+                            p-3
+                            focus:outline-none
+                            focus:ring-2
+                            focus:ring-cyan-400
+                            transition
+                            "
+                            placeholder="เช่น อาคาร CS ห้อง 201"
+                            value={form.location}
+                            onChange={(e) =>
+                                setForm({
+                                    ...form,
+                                    location: e.target.value
+                                })
+                            }
+                        />
+                    </div>
+
+
+
+                    <button
+                        disabled={loading}
+                        className="
+                        w-full
+                        bg-gradient-to-r
+                        from-cyan-500
+                        to-emerald-500
+                        text-white
+                        rounded-xl
+                        py-3
+                        font-bold
+                        shadow-lg
+                        hover:scale-[1.02]
+                        hover:shadow-2xl
+                        transition
+                        disabled:opacity-60
+                        disabled:cursor-not-allowed
+                        "
+                    >
+                        {
+                            loading
+                                ? "กำลังส่ง..."
+                                : "ส่งแจ้งซ่อม"
+                        }
+                    </button>
+
+
+                </form>
 
 
             </div>
@@ -238,5 +267,4 @@ export default function RepairPage(){
         </div>
 
     );
-
 }

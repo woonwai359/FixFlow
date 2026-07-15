@@ -1,43 +1,106 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import axios from "axios";
 import { useRouter } from "next/navigation";
 
 
-export default function Dashboard(){
+export default function Dashboard() {
 
     const router = useRouter();
+
+    const [repairs, setRepairs] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [userName, setUserName] = useState("");
+
+
+    const fetchRepairs = async () => {
+
+        try {
+
+            const token = localStorage.getItem("token");
+
+            const response = await axios.get(
+                "http://localhost:5000/api/repairs",
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+
+            setRepairs(response.data);
+
+        } catch (error) {
+
+            console.log(error);
+
+        } finally {
+
+            setLoading(false);
+
+        }
+
+    };
+
+
+    useEffect(() => {
+
+        const userStr = localStorage.getItem("user");
+
+        if (userStr) {
+            try {
+                setUserName(JSON.parse(userStr).name ?? "");
+            } catch {
+                setUserName("");
+            }
+        }
+
+        fetchRepairs();
+
+    }, []);
+
+
+    const countByStatus = (status: string) =>
+        repairs.filter((r) => r.status === status).length;
 
 
     const stats = [
         {
-            label:"รอดำเนินการ",
-            count:0,
-            icon:"⏳",
-            color:"from-pink-100 to-rose-100"
+            label: "รอดำเนินการ",
+            count: countByStatus("รอดำเนินการ"),
+            icon: "⏳",
+            color: "from-cyan-100 to-sky-100"
         },
         {
-            label:"กำลังดำเนินการ",
-            count:0,
-            icon:"🛠️",
-            color:"from-purple-100 to-pink-100"
+            label: "กำลังดำเนินการ",
+            count: countByStatus("กำลังดำเนินการ"),
+            icon: "🛠️",
+            color: "from-teal-100 to-cyan-100"
         },
         {
-            label:"เสร็จสิ้น",
-            count:0,
-            icon:"✨",
-            color:"from-emerald-100 to-teal-100"
+            label: "เสร็จสิ้น",
+            count: countByStatus("เสร็จสิ้น"),
+            icon: "✨",
+            color: "from-emerald-100 to-teal-100"
         }
     ];
+
+
+    const handleLogout = () => {
+
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+
+        router.push("/login");
+
+    };
 
 
     return (
 
         <div className="
         min-h-screen
-        bg-gradient-to-br
-        from-pink-50
-        via-white
-        to-purple-50
         p-6
         ">
 
@@ -54,7 +117,7 @@ export default function Dashboard(){
             p-5
             shadow-lg
             border
-            border-pink-100
+            border-cyan-100
             ">
 
                 <div className="flex items-center gap-3">
@@ -65,14 +128,17 @@ export default function Dashboard(){
                     h-12
                     rounded-2xl
                     bg-gradient-to-br
-                    from-pink-500
-                    to-purple-500
+                    from-cyan-500
+                    to-emerald-500
                     flex
                     items-center
                     justify-center
                     text-white
                     text-2xl
                     shadow-lg
+                    hover:rotate-12
+                    transition
+                    duration-300
                     ">
                         🔧
                     </div>
@@ -84,8 +150,8 @@ export default function Dashboard(){
                         text-2xl
                         font-black
                         bg-gradient-to-r
-                        from-pink-500
-                        to-purple-500
+                        from-cyan-600
+                        to-emerald-600
                         bg-clip-text
                         text-transparent
                         ">
@@ -93,7 +159,7 @@ export default function Dashboard(){
                         </h1>
 
 
-                        <p className="text-xs text-gray-400">
+                        <p className="text-xs text-slate-400">
                             Smart Repair System
                         </p>
 
@@ -105,14 +171,16 @@ export default function Dashboard(){
 
 
                 <button
+                onClick={handleLogout}
                 className="
                 px-5
                 py-2
                 rounded-full
-                bg-pink-100
-                text-pink-600
+                bg-cyan-100
+                text-cyan-700
                 font-semibold
-                hover:bg-pink-200
+                hover:bg-cyan-200
+                hover:scale-105
                 transition
                 "
                 >
@@ -121,8 +189,6 @@ export default function Dashboard(){
 
 
             </nav>
-
-
 
 
 
@@ -135,12 +201,13 @@ export default function Dashboard(){
             relative
             overflow-hidden
             bg-gradient-to-r
-            from-pink-500
-            to-purple-500
+            from-cyan-500
+            to-emerald-500
             rounded-3xl
             p-8
             text-white
             shadow-xl
+            animate-fade-in-up
             ">
 
 
@@ -151,7 +218,7 @@ export default function Dashboard(){
                 text-8xl
                 opacity-20
                 ">
-                    🌸
+                    🌊
                 </div>
 
 
@@ -160,13 +227,13 @@ export default function Dashboard(){
                 text-3xl
                 font-black
                 ">
-                    สวัสดี Pat 👋
+                    สวัสดี {userName || "นักศึกษา"} 👋
                 </h2>
 
 
                 <p className="
                 mt-2
-                text-pink-100
+                text-cyan-50
                 ">
                     ระบบแจ้งซ่อมออนไลน์สำหรับนักศึกษา
                 </p>
@@ -175,14 +242,14 @@ export default function Dashboard(){
 
                 <button
 
-                onClick={()=>{
+                onClick={() => {
                     router.push("/repair");
                 }}
 
                 className="
                 mt-6
                 bg-white
-                text-pink-600
+                text-cyan-600
                 px-6
                 py-3
                 rounded-full
@@ -202,10 +269,6 @@ export default function Dashboard(){
 
 
 
-
-
-
-
             {/* Menu */}
 
 
@@ -217,36 +280,39 @@ export default function Dashboard(){
             ">
 
 
-
                 <div
+                onClick={() => router.push("/repair")}
                 className="
-                bg-white
+                cursor-pointer
+                bg-white/80
+                backdrop-blur-xl
                 rounded-3xl
                 p-6
                 shadow-md
                 border
-                border-pink-100
+                border-cyan-100
                 hover:-translate-y-2
+                hover:shadow-2xl
                 transition
+                duration-300
                 "
                 >
 
 
-                    <div className="text-5xl">
-                        🔧
-                    </div>
+                    <div className="text-5xl">🔧</div>
 
 
                     <h3 className="
                     text-xl
                     font-bold
                     mt-4
+                    text-slate-800
                     ">
                         แจ้งซ่อมใหม่
                     </h3>
 
 
-                    <p className="text-gray-500 mt-2">
+                    <p className="text-slate-500 mt-2">
                         แจ้งปัญหาอุปกรณ์ อาคาร ห้องเรียน
                         หรือสถานที่เสียหาย
                     </p>
@@ -257,36 +323,39 @@ export default function Dashboard(){
 
 
 
-
                 <div
+                onClick={() => router.push("/my-repair")}
                 className="
-                bg-white
+                cursor-pointer
+                bg-white/80
+                backdrop-blur-xl
                 rounded-3xl
                 p-6
                 shadow-md
                 border
-                border-purple-100
+                border-teal-100
                 hover:-translate-y-2
+                hover:shadow-2xl
                 transition
+                duration-300
                 "
                 >
 
 
-                    <div className="text-5xl">
-                        📋
-                    </div>
+                    <div className="text-5xl">📋</div>
 
 
                     <h3 className="
                     text-xl
                     font-bold
                     mt-4
+                    text-slate-800
                     ">
                         รายการของฉัน
                     </h3>
 
 
-                    <p className="text-gray-500 mt-2">
+                    <p className="text-slate-500 mt-2">
                         ตรวจสอบสถานะงานซ่อม
                         และประวัติการแจ้งปัญหา
                     </p>
@@ -295,12 +364,7 @@ export default function Dashboard(){
                 </div>
 
 
-
             </div>
-
-
-
-
 
 
 
@@ -311,68 +375,80 @@ export default function Dashboard(){
             text-xl
             font-bold
             mt-10
+            text-slate-700
             ">
-                สถานะงานซ่อม 💗
+                สถานะงานซ่อม 💙
             </h2>
 
 
-
-            <div className="
-            grid
-            md:grid-cols-3
-            gap-5
-            mt-5
-            ">
-
-
-                {
-                    stats.map((item,index)=>(
-
-
-                        <div
-                        key={index}
-                        className={`
-                        rounded-3xl
-                        p-6
-                        bg-gradient-to-br
-                        ${item.color}
-                        shadow-md
-                        hover:scale-105
-                        transition
-                        `}
-                        >
+            {
+                loading
+                ? (
+                    <p className="mt-5 text-slate-400">
+                        กำลังโหลดข้อมูล...
+                    </p>
+                )
+                : (
+                    <div className="
+                    grid
+                    md:grid-cols-3
+                    gap-5
+                    mt-5
+                    ">
 
 
-                            <div className="text-4xl">
-                                {item.icon}
-                            </div>
+                        {
+                            stats.map((item, index) => (
 
 
-                            <p className="
-                            mt-4
-                            text-gray-600
-                            ">
-                                {item.label}
-                            </p>
+                                <div
+                                key={index}
+                                className={`
+                                rounded-3xl
+                                p-6
+                                bg-gradient-to-br
+                                ${item.color}
+                                shadow-md
+                                hover:scale-105
+                                hover:shadow-xl
+                                transition
+                                duration-300
+                                `}
+                                >
 
 
-                            <h3 className="
-                            text-4xl
-                            font-black
-                            ">
-                                {item.count}
-                            </h3>
+                                    <div className="text-4xl">
+                                        {item.icon}
+                                    </div>
 
 
-                        </div>
+                                    <p className="
+                                    mt-4
+                                    text-slate-600
+                                    ">
+                                        {item.label}
+                                    </p>
 
 
-                    ))
-                }
+                                    <h3 className="
+                                    text-4xl
+                                    font-black
+                                    text-slate-800
+                                    ">
+                                        {item.count}
+                                    </h3>
 
 
-            </div>
+                                </div>
 
+
+                            ))
+                        }
+
+
+                    </div>
+                )
+            }
 
 
         </div>

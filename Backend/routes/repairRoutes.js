@@ -13,8 +13,8 @@ const {
 const authMiddleware = require("../middleware/authMiddleware");
 
 
-// GET ทั้งหมด
-router.get("/", getRepairs);
+// GET ทั้งหมด (เฉพาะของ user ที่ login อยู่)
+router.get("/", authMiddleware, getRepairs);
 
 
 // GET ตาม ID

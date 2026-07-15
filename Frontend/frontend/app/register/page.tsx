@@ -5,44 +5,47 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 
 
-export const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    window.location.href = "/login";
-};
-
-
-export default function LoginPage() {
+export default function RegisterPage() {
 
     const router = useRouter();
 
+    const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [confirm, setConfirm] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
 
-    const handleLogin = async () => {
+    const handleRegister = async () => {
 
         setError("");
+
+        if (!name || !email || !password) {
+            setError("กรุณากรอกข้อมูลให้ครบ");
+            return;
+        }
+
+        if (password !== confirm) {
+            setError("รหัสผ่านไม่ตรงกัน");
+            return;
+        }
+
         setLoading(true);
 
         try {
 
-            const response = await axios.post(
-                "http://localhost:5000/api/auth/login",
+            await axios.post(
+                "http://localhost:5000/api/auth/register",
                 {
+                    name,
                     email,
                     password
                 }
             );
 
-            const { token, user } = response.data;
-
-            localStorage.setItem("token", token);
-            localStorage.setItem("user", JSON.stringify(user));
-
-            router.push("/dashboard");
+            alert("สมัครสมาชิกสำเร็จ 🎉");
+            router.push("/login");
 
         } catch (err: any) {
 
@@ -50,7 +53,7 @@ export default function LoginPage() {
 
             setError(
                 err?.response?.data?.message
-                ?? "Email หรือ Password ไม่ถูกต้อง"
+                ?? "ไม่สามารถสมัครสมาชิกได้"
             );
 
         } finally {
@@ -59,11 +62,6 @@ export default function LoginPage() {
 
         }
 
-    };
-
-
-    const handleForgot = () => {
-        alert("ฟังก์ชันนี้กำลังพัฒนา");
     };
 
 
@@ -129,11 +127,7 @@ export default function LoginPage() {
                     </h1>
 
                     <p className="text-sm text-slate-500 mt-1">
-                        ระบบแจ้งซ่อมออนไลน์
-                    </p>
-
-                    <p className="text-xs text-slate-400 mt-1">
-                        แจ้งปัญหา ติดตามสถานะ และจัดการงานซ่อม
+                        สมัครสมาชิกใหม่
                     </p>
 
                 </div>
@@ -166,6 +160,50 @@ export default function LoginPage() {
                 {/* Form */}
 
                 <div className="mt-6 space-y-4">
+
+
+                    {/* Name */}
+
+                    <div>
+                        <label className="text-sm font-semibold text-slate-600">
+                            ชื่อ-นามสกุล
+                        </label>
+
+                        <div className="relative mt-2">
+
+                            <span className="
+                            absolute
+                            left-3
+                            top-1/2
+                            -translate-y-1/2
+                            text-slate-400
+                            ">
+                                🪪
+                            </span>
+
+                            <input
+                            type="text"
+                            className="
+                            w-full
+                            border
+                            border-slate-200
+                            rounded-xl
+                            pl-10
+                            pr-3
+                            py-3
+                            focus:outline-none
+                            focus:ring-2
+                            focus:ring-cyan-400
+                            transition
+                            "
+                            placeholder="ชื่อของคุณ"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            />
+
+                        </div>
+                    </div>
+
 
 
                     {/* Email */}
@@ -216,7 +254,7 @@ export default function LoginPage() {
 
                     <div>
                         <label className="text-sm font-semibold text-slate-600">
-                            Password
+                            รหัสผ่าน
                         </label>
 
                         <div className="relative mt-2">
@@ -249,8 +287,52 @@ export default function LoginPage() {
                             placeholder="••••••••"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
+                            />
+
+                        </div>
+                    </div>
+
+
+
+                    {/* Confirm password */}
+
+                    <div>
+                        <label className="text-sm font-semibold text-slate-600">
+                            ยืนยันรหัสผ่าน
+                        </label>
+
+                        <div className="relative mt-2">
+
+                            <span className="
+                            absolute
+                            left-3
+                            top-1/2
+                            -translate-y-1/2
+                            text-slate-400
+                            ">
+                                🔒
+                            </span>
+
+                            <input
+                            type="password"
+                            className="
+                            w-full
+                            border
+                            border-slate-200
+                            rounded-xl
+                            pl-10
+                            pr-3
+                            py-3
+                            focus:outline-none
+                            focus:ring-2
+                            focus:ring-cyan-400
+                            transition
+                            "
+                            placeholder="••••••••"
+                            value={confirm}
+                            onChange={(e) => setConfirm(e.target.value)}
                             onKeyDown={(e) => {
-                                if (e.key === "Enter") handleLogin();
+                                if (e.key === "Enter") handleRegister();
                             }}
                             />
 
@@ -259,30 +341,10 @@ export default function LoginPage() {
 
 
 
-                    {/* Forgot password */}
-
-                    <div className="text-right">
-                        <button
-                        type="button"
-                        onClick={handleForgot}
-                        className="
-                        text-sm
-                        text-cyan-600
-                        hover:text-emerald-600
-                        hover:underline
-                        transition
-                        "
-                        >
-                            ลืมรหัสผ่าน?
-                        </button>
-                    </div>
-
-
-
                     {/* Submit */}
 
                     <button
-                    onClick={handleLogin}
+                    onClick={handleRegister}
                     disabled={loading}
                     className="
                     w-full
@@ -303,8 +365,8 @@ export default function LoginPage() {
                     >
                         {
                             loading
-                            ? "กำลังเข้าสู่ระบบ..."
-                            : "เข้าสู่ระบบ"
+                            ? "กำลังสมัครสมาชิก..."
+                            : "สมัครสมาชิก"
                         }
                     </button>
 
@@ -313,13 +375,13 @@ export default function LoginPage() {
 
 
 
-                {/* Register link */}
+                {/* Login link */}
 
                 <p className="text-center text-sm text-slate-500 mt-6">
-                    ยังไม่มีบัญชี?{" "}
+                    มีบัญชีแล้ว?{" "}
                     <button
                     type="button"
-                    onClick={() => router.push("/register")}
+                    onClick={() => router.push("/login")}
                     className="
                     text-cyan-600
                     font-semibold
@@ -328,7 +390,7 @@ export default function LoginPage() {
                     transition
                     "
                     >
-                        สมัครสมาชิก
+                        เข้าสู่ระบบ
                     </button>
                 </p>
 
