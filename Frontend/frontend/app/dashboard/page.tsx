@@ -13,14 +13,23 @@ export default function Dashboard() {
 
   useEffect(() => {
     const user = getCurrentUser();
-    if (user) {
-      setUserName(user.name);
+    
+    if (!user) {
+      // 👈 ป้องกันคนไม่ได้ Login แอบเข้ามา โดยให้เด้งกลับไปหน้า Login
+      router.push("/login");
+      return;
     }
 
+    setUserName(user.name);
+
     const data = getRepairs();
-    setRepairs(data);
+    
+    // 👈 จุดสำคัญ: กรองสถิติข้อมูลแจ้งซ่อมทั้งหมด ให้เอาเฉพาะที่เป็นของ user คนปัจจุบันเท่านั้น
+    const myData = data.filter((repair: any) => repair.userId === user.id);
+    
+    setRepairs(myData);
     setLoading(false);
-  }, []);
+  }, [router]);
 
   const countByStatus = (status: string) =>
     repairs.filter((r) => r.status === status).length;
@@ -358,5 +367,4 @@ export default function Dashboard() {
     </div>
 
   );
-
 }

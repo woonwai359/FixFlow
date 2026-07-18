@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getRepairs, type Repair } from "../../lib/storage";
+import { getRepairs, getCurrentUser, type Repair } from "../../lib/storage";
 
 const statusStyle: Record<string, { icon: string; badge: string }> = {
   "รอดำเนินการ": {
@@ -28,10 +28,22 @@ export default function MyRepairPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const user = getCurrentUser(); // 👈 ดึงข้อมูลผู้ใช้ปัจจุบันที่ล็อกอินอยู่
+
+    if (!user) {
+      // ถ้าไม่ได้ล็อกอิน ให้เด้งกลับไปหน้า login ทันที
+      router.push("/login");
+      return;
+    }
+
     const data = getRepairs();
-    setRepairs(data);
+    
+    // 👈 กรองรายการแจ้งซ่อมทั้งหมด ให้แสดงเฉพาะรายการที่เป็นของ user.id คนนี้เท่านั้น
+    const myData = data.filter((repair: any) => repair.userId === user.id);
+    
+    setRepairs(myData);
     setLoading(false);
-  }, []);
+  }, [router]);
 
   return (
 
@@ -275,5 +287,4 @@ export default function MyRepairPage() {
     </div>
 
   );
-
 }

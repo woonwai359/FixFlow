@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getToken, saveRepair, type Repair } from "../../lib/storage";
+import { getToken, saveRepair, getCurrentUser, type Repair } from "../../lib/storage";
 
 export default function RepairPage() {
   const router = useRouter();
@@ -22,23 +22,25 @@ export default function RepairPage() {
       setLoading(true);
 
       const token = getToken();
+      const user = getCurrentUser(); // 👈 ดึงข้อมูลผู้ใช้งานที่ล็อกอินอยู่ในปัจจุบันมาใช้งาน
 
-      if (!token) {
+      if (!token || !user) {
         alert("กรุณาเข้าสู่ระบบก่อนแจ้งซ่อม");
         router.push("/login");
         return;
       }
 
-      const newRepair: Repair = {
+      const newRepair: Repair & { userId?: string } = {
         id: crypto.randomUUID(),
         title: form.title,
         detail: form.detail,
         location: form.location,
         status: "รอดำเนินการ",
+        userId: user.id, // 👈 จุดสำคัญ: ผูก ID ของคนที่แอดข้อมูลเข้าไปในระบบ จะได้ไม่ไปปนกับบัญชีอื่น
         createdAt: new Date().toISOString(),
       };
 
-      saveRepair(newRepair);
+      saveRepair(newRepair as Repair);
 
       alert("แจ้งซ่อมสำเร็จ 🎉");
 

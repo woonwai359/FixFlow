@@ -11,6 +11,7 @@ export interface Repair {
   detail: string;
   location: string;
   status: string;
+  userId: string; // 👈 จุดที่ 1: เพิ่ม userId เข้าไปใน Interface เพื่อระบุเจ้าของข้อมูล
   createdAt: string;
 }
 
@@ -24,10 +25,9 @@ let repairsCache: Repair[] | null = null;
 
 export function getUsers(): User[] {
   if (typeof window === "undefined") return [];
-  if (!usersCache) {
-    const data = localStorage.getItem(USERS_KEY);
-    usersCache = data ? JSON.parse(data) : [];
-  }
+  // 👈 ดึงข้อมูลสดใหม่จาก localStorage เสมอเพื่อป้องกันข้อมูล Cache ค้างตอนเปลี่ยนบัญชี
+  const data = localStorage.getItem(USERS_KEY);
+  usersCache = data ? JSON.parse(data) : [];
   return usersCache as User[];
 }
 
@@ -44,10 +44,9 @@ export function findUserByEmail(email: string): User | undefined {
 
 export function getRepairs(): Repair[] {
   if (typeof window === "undefined") return [];
-  if (!repairsCache) {
-    const data = localStorage.getItem(REPAIRS_KEY);
-    repairsCache = data ? JSON.parse(data) : [];
-  }
+  // 👈 ดึงข้อมูลสดใหม่จาก localStorage เสมอเพื่อป้องกันข้อมูล Cache ค้างตอนเปลี่ยนบัญชี
+  const data = localStorage.getItem(REPAIRS_KEY);
+  repairsCache = data ? JSON.parse(data) : [];
   return repairsCache as Repair[];
 }
 
@@ -84,4 +83,7 @@ export function setToken(token: string): void {
 export function clearSession(): void {
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(CURRENT_USER_KEY);
+  // 👈 เคลียร์ค่า cache ในตัวแปรทิ้งด้วยเวลา logout ข้อมูลจะได้ไม่ค้างไปบัญชีถัดไป
+  usersCache = null;
+  repairsCache = null;
 }
